@@ -24,7 +24,7 @@ class DatabaseManager:
                     email TEXT UNIQUE NOT NULL,
                     password TEXT NOT NULL,
                     pseudo TEXT UNIQUE NOT NULL,
-                    is_admin BOOLEAN NOT NULL DEFAULT 0
+                    is_admin BOOLEAN NOT NULL
                 )
             ''')
 
@@ -44,14 +44,14 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def inscrire(self, email, mot_de_passe, pseudo):
+    def inscrire(self, email, mot_de_passe, pseudo, is_admin=0):
         import hashlib
         mdp_hash = hashlib.sha256(mot_de_passe.encode('utf-8')).hexdigest()
         conn = self.get_connexion()
         try:
             conn.execute(
-                'INSERT INTO users (email, password, pseudo) VALUES (?,?,?)',
-                (email, mdp_hash, pseudo)
+                'INSERT INTO users (email, password, pseudo, is_admin) VALUES (?,?,?,?)',
+                (email, mdp_hash, pseudo, is_admin)
             )
             conn.commit()
             return True
@@ -74,7 +74,7 @@ class DatabaseManager:
         return user
 
     def creer_admin_default(self):
-        self.inscrire('admin@blinky.com', 'admin123', 'Admin')
+        self.inscrire('admin@blinky.com', 'admin123', 'Admin', 1)
 
     def supprimer_utilisateur(self, user_id):
         conn = self.get_connexion()
@@ -100,7 +100,7 @@ class DatabaseManager:
     def recuperer_utilisateurs(self):
         conn = self.get_connexion()
         try:
-            users = conn.execute('SELECT id_user, pseudo FROM users').fetchall()
+            users = conn.execute('SELECT id_user, pseudo, is_admin FROM users').fetchall()
             return users
         finally:
             conn.close()
@@ -118,5 +118,32 @@ class DatabaseManager:
                 (id_user1, id_user2, id_user2, id_user1)
             ).fetchall()
             return messages
+        finally:
+            conn.close()
+    
+    def recuperer_discussions(self, id_user):
+        conn = self.get_connexion()
+        try:
+            discussions = conn.execute('''
+                SELECT DISTINCT pseudo, id_user FROM USERS
+                WHERE id_user IN (
+                    SELECT id_sender FROM MESSAGES WHERE id_receiver = ?
+                    UNION
+                    SELECT id_receiver FROM MESSAGES WHERE id_sender = ?
+                )
+            ''', (id_user, id_user)).fetchall()
+            
+            return discussions
+        finally:
+            conn.close()
+
+    def recuperer_utilisateur(self, id_user):
+        conn = self.get_connexion()
+        try:
+            user = conn.execute(
+                'SELECT pseudo FROM users WHERE id_user=?',
+                (id_user,)
+                ).fetchone()
+            return user
         finally:
             conn.close()

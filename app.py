@@ -43,11 +43,18 @@ def inscription():
 
 @app.route('/accueil')
 def accueil():
-    return render_template('accueil.html')
+    discussions = db.recuperer_discussions(id_user=session['user_id'])
+    users = db.recuperer_utilisateurs()
+    return render_template('accueil.html', discussions=discussions, users=users)
 
-@app.route('/discussion')
-def discussion():
-    return render_template('discussion.html')
+@app.route('/discussion/<int:id_user>', methods=['GET', 'POST'])
+def discussion(id_user):
+    if request.method == 'POST':
+        content = request.form['content']
+        db.creer_message(content, session['user_id'], id_user)
+    messages = db.recuperer_messages(session['user_id'], id_user)
+    user = db.recuperer_utilisateur(id_user)
+    return render_template('discussion.html', messages=messages, user=user)
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
