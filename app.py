@@ -41,6 +41,11 @@ def inscription():
             return render_template('inscription.html', erreur='Email déjà utilisé')
     return render_template('inscription.html')
 
+@app.route('/deconnexion')
+def deconnexion():
+    session.clear()
+    return redirect('/')
+
 @app.route('/accueil')
 def accueil():
     discussions = db.recuperer_discussions(id_user=session['user_id'])
