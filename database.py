@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 
 class DatabaseManager:
     def __init__(self, db_name='blinky.db'):
@@ -81,5 +82,41 @@ class DatabaseManager:
             conn.execute('DELETE FROM users WHERE id=?', (user_id,))
             conn.commit()
             return True
+        finally:
+            conn.close()
+
+    def creer_message(self, content, id_sender, id_receiver):
+        conn = self.get_connexion()
+        try:
+            conn.execute(
+                'INSERT INTO messages (content, datetime, id_sender, id_receiver) VALUES (?,?,?,?)',
+                (content, datetime.now(), id_sender, id_receiver)
+            )
+            conn.commit()
+            return True
+        finally:
+            conn.close()
+
+    def recuperer_utilisateurs(self):
+        conn = self.get_connexion()
+        try:
+            users = conn.execute('SELECT id_user, pseudo FROM users').fetchall()
+            return users
+        finally:
+            conn.close()
+
+    def recuperer_messages(self, id_user1, id_user2):
+        conn = self.get_connexion()
+        try:
+            messages = conn.execute(
+                '''
+                SELECT content, datetime, id_sender, id_receiver
+                FROM messages
+                WHERE (id_sender=? AND id_receiver=?) OR (id_sender=? AND id_receiver=?)
+                ORDER BY datetime ASC
+                ''',
+                (id_user1, id_user2, id_user2, id_user1)
+            ).fetchall()
+            return messages
         finally:
             conn.close()
