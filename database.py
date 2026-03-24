@@ -18,8 +18,8 @@ class DatabaseManager:
             cursor = conn.cursor()
 
             cursor.execute('''
-                CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                CREATE TABLE IF NOT EXISTS USERS (
+                    id_user INTEGER PRIMARY KEY AUTOINCREMENT,
                     email TEXT UNIQUE NOT NULL,
                     password TEXT NOT NULL,
                     pseudo TEXT UNIQUE NOT NULL,
@@ -28,12 +28,14 @@ class DatabaseManager:
             ''')
 
             cursor.execute('''
-                CREATE TABLE IF NOT EXISTS messages (
+                CREATE TABLE IF NOT EXISTS MESSAGES (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     content TEXT NOT NULL,
                     datetime DATETIME NOT NULL,
-                    FOREIGN KEY (users_id) REFERENCES users(id)
-                    FOREIGN KEY (users_id_1) REFERENCES users(id)
+                    id_sender INTEGER,
+                    id_receiver INTEGER,
+                    FOREIGN KEY (id_sender) REFERENCES users(id_user),
+                    FOREIGN KEY (id_receiver) REFERENCES users(id_user)
                 )
             ''')
 
@@ -41,14 +43,14 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def inscrire(self, email, mot_de_passe):
+    def inscrire(self, email, mot_de_passe, pseudo):
         import hashlib
         mdp_hash = hashlib.sha256(mot_de_passe.encode('utf-8')).hexdigest()
         conn = self.get_connexion()
         try:
             conn.execute(
-                'INSERT INTO users (email, password) VALUES (?,?,?)',
-                (email, mdp_hash)
+                'INSERT INTO users (email, password, pseudo) VALUES (?,?,?)',
+                (email, mdp_hash, pseudo)
             )
             conn.commit()
             return True
@@ -71,7 +73,7 @@ class DatabaseManager:
         return user
 
     def creer_admin_default(self):
-        self.inscrire('admin@blinky.com', 'admin123')
+        self.inscrire('admin@blinky.com', 'admin123', 'Admin')
 
     def supprimer_utilisateur(self, user_id):
         conn = self.get_connexion()
