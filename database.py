@@ -71,7 +71,7 @@ class DatabaseManager:
         return user
 
     def creer_admin_default(self):
-        self.inscrire('admin@shop.com', 'admin123')
+        self.inscrire('admin@blinky.com', 'admin123')
 
     def supprimer_utilisateur(self, user_id):
         conn = self.get_connexion()
