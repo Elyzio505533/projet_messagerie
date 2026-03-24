@@ -1,13 +1,42 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, session
+from database import DatabaseManager
+
 
 app = Flask(__name__)
+db = DatabaseManager()
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def connexion():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = db.connecter(email, password)
+        if user:
+            session['user_id'] = user['id']
+            session['user_pseudo'] = user['pseudo']
+            session['user_is_admin'] = user['is_admin']
+            return redirect('/accueil.html')
+        else:
+            return render_template('connexion.html', erreur='Email ou mot de passe incorrect')
     return render_template('connexion.html')
 
-@app.route('/inscription')
+@app.route('/inscription', methods=['GET', 'POST'])
 def inscription():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        pseudo = request.form['pseudo']
+        if db.inscrire(email, password, pseudo):
+            user = db.connecter(email, password)
+            if user:
+                session['user_id'] = user['id']
+                session['user_pseudo'] = user['pseudo']
+                session['user_is_admin'] = user['is_admin']
+                return redirect('/accueil.html')
+            else:
+                return redirect('/connexion')
+        else:
+            return render_template('inscription.html', erreur='Email déjà utilisé')
     return render_template('inscription.html')
 
 @app.route('/accueil')
