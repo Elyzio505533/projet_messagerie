@@ -1,4 +1,18 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+{% set displayed_users = [] %}
+
+{% for d in discussions %}
+    <a href="/discussion/{{ d.id_user }}">{{ d.pseudo }}</a><br>
+    {% set _ = displayed_users.append(d.id_user) %}
+{% endfor %}
+
+{% for u in users %}
+    {% if u.id_user not in displayed_users and session['user_id'] != u.id_user and not u.is_admin %}
+        <a href="/discussion/{{ u.id_user }}">{{ u.pseudo }}</a><br>
+    {% endif %}
+{% endfor %}
+
 {% endblock %}

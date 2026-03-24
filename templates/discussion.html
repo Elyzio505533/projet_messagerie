@@ -1,4 +1,16 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+{% for m in messages %}
+    {{ m.content }}
+{% endfor %}
+
+<form method="POST">
+    <input type="text" name="content" placeholder="Votre message">
+    <button type="submit">Envoyer</button>
+</form>
+
+{{ user.pseudo }}
+
 {% endblock %}
