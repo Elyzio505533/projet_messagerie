@@ -61,5 +61,9 @@ def discussion(id_user):
     user = db.recuperer_utilisateur(id_user)
     return render_template('discussion.html', messages=messages, user=user)
 
+@app.route('/mon_compte')
+def mon_compte():
+    return render_template('mon_compte.html')
+
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
