@@ -3,6 +3,7 @@
 {% block content %}
 
 {% for m in messages %}
+    {{ m.datetime }}
     {{ m.content }}
 {% endfor %}
 

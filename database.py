@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class DatabaseManager:
     def __init__(self, db_name='blinky.db'):
@@ -88,10 +88,14 @@ class DatabaseManager:
     def creer_message(self, content, id_sender, id_receiver):
         conn = self.get_connexion()
         try:
+            now = datetime.now()
+            rounded_datetime = now.replace(second=0, microsecond=0)
+
             conn.execute(
                 'INSERT INTO messages (content, datetime, id_sender, id_receiver) VALUES (?,?,?,?)',
-                (content, datetime.now(), id_sender, id_receiver)
+                (content, rounded_datetime.strftime("%Y-%m-%d %H:%M"), id_sender, id_receiver)
             )
+
             conn.commit()
             return True
         finally:
