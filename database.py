@@ -90,12 +90,10 @@ class DatabaseManager:
         try:
             now = datetime.now()
             rounded_datetime = now.replace(second=0, microsecond=0)
-
             conn.execute(
                 'INSERT INTO messages (content, datetime, id_sender, id_receiver) VALUES (?,?,?,?)',
                 (content, rounded_datetime.strftime("%Y-%m-%d %H:%M"), id_sender, id_receiver)
             )
-
             conn.commit()
             return True
         finally:
