@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,17 +8,66 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon_io/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon_io/favicon-16x16.png">
     <link rel="manifest" href="/static/favicon_io/site.webmanifest">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+
+    <div id="flash"></div>
+
+    <div id="intro">
+        <div class="ring animate"></div>
+        <div class="ring animate"></div>
+        <div class="ring animate"></div>
+        <div class="glow"></div>
+        <div class="logo-wrapper">
+            <div id="logo-box">
+                <img src="/static/favicon_io/blinky.png" alt="Blinky" />
+            </div>
+            <p class="logo-name" id="logo-name">Blinky</p>
+            <p class="logo-tagline" id="logo-tagline">Connexion en cours...</p>
+            <div class="progress-bar" id="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
     <main>
+        <div class="card-logo">
+            <img src="/static/favicon_io/blinky.png" alt="Blinky" />
+            <span>Blinky</span>
+        </div>
         <h1>Connexion</h1>
-        <form method="POST">
+        <p class="sub">Bon retour ! Connecte-toi à ton compte.</p>
+        <form method="POST" id="login-form">
             <input type="text" name="email" placeholder="email@blinky.com" required>
-            <input type="password" name="password" placeholder="Mot de passe" required>
+            <input type="password" name="password" placeholder="••••••••" required>
             <button type="submit">Se connecter</button>
         </form>
-        <p>Pas de compte ?</p>
-        <a href="/inscription">Créer un compte</a>
+        <div class="divider"><hr /><span>ou</span><hr /></div>
+        <p class="bottom">Pas de compte ? <a href="/inscription">Créer un compte</a></p>
     </main>
+
+    <script>
+        const form = document.getElementById('login-form');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const intro  = document.getElementById('intro');
+            const logoBox = document.getElementById('logo-box');
+            const logoName = document.getElementById('logo-name');
+            const logoTag  = document.getElementById('logo-tagline');
+            const bar  = document.getElementById('progress-bar');
+            const fill = document.getElementById('progress-fill');
+            const flash = document.getElementById('flash');
+
+            intro.classList.add('visible');
+            logoBox.classList.add('animate-in');
+            setTimeout(() => { logoName.classList.add('show'); }, 700);
+            setTimeout(() => { logoTag.classList.add('show'); }, 900);
+            setTimeout(() => { bar.classList.add('show'); fill.classList.add('run'); }, 1100);
+            setTimeout(() => { flash.classList.add('run'); }, 2400);
+            setTimeout(() => { logoBox.classList.remove('animate-in'); logoBox.classList.add('animate-out'); }, 2550);
+            setTimeout(() => { form.submit(); }, 3100);
+        });
+    </script>
 </body>
 </html>
