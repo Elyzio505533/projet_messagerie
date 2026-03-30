@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,18 +8,24 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon_io/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon_io/favicon-16x16.png">
     <link rel="manifest" href="/static/favicon_io/site.webmanifest">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <main>
+        <div class="card-logo">
+            <img src="/static/favicon_io/blinky.png" alt="Blinky" />
+            <span>Blinky</span>
+        </div>
         <h1>Inscription</h1>
+        <p class="sub">Crée ton compte en quelques secondes.</p>
         <form method="POST">
             <input type="text" name="email" placeholder="email@blinky.com" required>
             <input type="password" name="password" placeholder="••••••••" required>
             <input type="text" name="pseudo" placeholder="Pseudo">
             <button type="submit">S'inscrire</button>
         </form>
-        <p>Déjà inscrit ?</p>
-        <a href="/">Se connecter à un compte</a>
+        <div class="divider"><hr /><span>ou</span><hr /></div>
+        <p class="bottom">Déjà inscrit ? <a href="/">Se connecter à un compte</a></p>
     </main>
 </body>
 </html>
