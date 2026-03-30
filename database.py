@@ -41,6 +41,18 @@ class DatabaseManager:
                 )
             ''')
 
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS DISCUSSION_VISITS (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id_user INTEGER NOT NULL,
+                    id_other_user INTEGER NOT NULL,
+                    last_visit DATETIME NOT NULL,
+                    UNIQUE(id_user, id_other_user),
+                    FOREIGN KEY (id_user) REFERENCES users(id_user),
+                    FOREIGN KEY (id_other_user) REFERENCES users(id_user)
+                )
+            ''')
+
             conn.commit()
         finally:
             conn.close()
@@ -76,6 +88,7 @@ class DatabaseManager:
 
     def creer_admin_default(self):
         self.inscrire('admin@blinky.com', 'admin123', 'Admin', 1)
+        self.update_avatar(1, 'admin.jpg')
 
     def supprimer_utilisateur(self, user_id):
         conn = self.get_connexion()
@@ -90,10 +103,9 @@ class DatabaseManager:
         conn = self.get_connexion()
         try:
             now = datetime.now()
-            rounded_datetime = now.replace(second=0, microsecond=0)
             conn.execute(
                 'INSERT INTO messages (content, datetime, id_sender, id_receiver) VALUES (?,?,?,?)',
-                (content, rounded_datetime.strftime("%Y-%m-%d %H:%M"), id_sender, id_receiver)
+                (content, now.strftime("%Y-%m-%d %H:%M:%S"), id_sender, id_receiver)
             )
             conn.commit()
             return True
@@ -319,5 +331,70 @@ class DatabaseManager:
             conn.execute('DELETE FROM messages WHERE id=?', (message_id,))
             conn.commit()
             return True
+        finally:
+            conn.close()
+    
+    # ────────────────────────────────────────────────────────────────────────── 
+    # SYSTÈME DE NOTIFICATIONS
+    # ──────────────────────────────────────────────────────────────────────────
+    
+    def update_last_visit(self, id_user, id_other_user):
+        """Mets à jour la dernière visite de l'utilisateur pour cette discussion"""
+        conn = self.get_connexion()
+        try:
+            now = datetime.now()
+            
+            # Vérifier si la visite existe
+            existing = conn.execute(
+                'SELECT id FROM discussion_visits WHERE id_user=? AND id_other_user=?',
+                (id_user, id_other_user)
+            ).fetchone()
+            
+            if existing:
+                conn.execute(
+                    'UPDATE discussion_visits SET last_visit=? WHERE id_user=? AND id_other_user=?',
+                    (now.strftime("%Y-%m-%d %H:%M:%S"), id_user, id_other_user)
+                )
+            else:
+                conn.execute(
+                    'INSERT INTO discussion_visits (id_user, id_other_user, last_visit) VALUES (?,?,?)',
+                    (id_user, id_other_user, now.strftime("%Y-%m-%d %H:%M:%S"))
+                )
+            conn.commit()
+        finally:
+            conn.close()
+    
+    def get_last_visit(self, id_user, id_other_user):
+        """Récupère la dernière visite de l'utilisateur pour cette discussion"""
+        conn = self.get_connexion()
+        try:
+            visit = conn.execute(
+                'SELECT last_visit FROM discussion_visits WHERE id_user=? AND id_other_user=?',
+                (id_user, id_other_user)
+            ).fetchone()
+            return visit['last_visit'] if visit else None
+        finally:
+            conn.close()
+    
+    def count_unread_messages(self, id_user, id_other_user):
+        """Compte le nombre de messages non lus dans cette discussion"""
+        conn = self.get_connexion()
+        try:
+            last_visit = self.get_last_visit(id_user, id_other_user)
+            
+            if last_visit is None:
+                # Première visite: compter tous les messages reçus
+                count = conn.execute(
+                    'SELECT COUNT(*) as cnt FROM messages WHERE id_receiver=? AND id_sender=?',
+                    (id_user, id_other_user)
+                ).fetchone()
+            else:
+                # Compter les messages reçus après la dernière visite
+                count = conn.execute(
+                    'SELECT COUNT(*) as cnt FROM messages WHERE id_receiver=? AND id_sender=? AND datetime > ?',
+                    (id_user, id_other_user, last_visit)
+                ).fetchone()
+            
+            return count['cnt'] if count else 0
         finally:
             conn.close()

@@ -57,15 +57,29 @@ def deconnexion():
 def accueil():
     discussions = db.recuperer_discussions(id_user=session['user_id'])
     users = db.recuperer_utilisateurs()
-    return render_template('accueil.html', discussions=discussions, users=users)
+    
+    # Convertir les Row en dictionnaires mutables et ajouter le nombre de messages non lus
+    discussions_with_unread = []
+    for discussion in discussions:
+        discussion_dict = dict(discussion)
+        unread_count = db.count_unread_messages(session['user_id'], discussion['id_user'])
+        discussion_dict['unread_count'] = unread_count
+        discussions_with_unread.append(discussion_dict)
+    
+    return render_template('accueil.html', discussions=discussions_with_unread, users=users)
 
 @app.route('/discussion/<int:id_user>', methods=['GET', 'POST'])
 def discussion(id_user):
     if request.method == 'POST':
         content = request.form['content']
         db.creer_message(content, session['user_id'], id_user)
+    
     messages = db.recuperer_messages(session['user_id'], id_user)
     user = db.recuperer_utilisateur(id_user)
+    
+    # Enregistrer la visite pour marquer les messages comme lus
+    db.update_last_visit(session['user_id'], id_user)
+    
     return render_template('discussion.html', messages=messages, user=user, id_user=id_user, session=session)
 
 @app.route('/mon_compte')

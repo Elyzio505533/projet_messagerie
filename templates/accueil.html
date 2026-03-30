@@ -15,7 +15,12 @@
                         <a href="/discussion/{{ d.id_user }}" class="discussion-item">
                             <img src="{{ url_for('static', filename='avatars/' + (d.avatar if d.avatar else 'default.png')) }}" alt="avatar">
                             <div class="discussion-info">
-                                <span class="discussion-name">{{ d.pseudo }}</span>
+                                <span class="discussion-name">
+                                    {{ d.pseudo }}
+                                    {% if d.unread_count and d.unread_count > 0 %}
+                                        <span class="notification-dot"></span>
+                                    {% endif %}
+                                </span>
                             </div>
                         </a>
                         {% set _ = displayed_users.append(d.id_user) %}

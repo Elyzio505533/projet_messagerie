@@ -325,6 +325,28 @@ body:has(#accueil-page) main {
     font-size: 15px;
     font-weight: 600;
     color: #111;
+    position: relative;
+    display: inline-block;
+}
+
+#accueil-page .notification-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #ff3b3b;
+    border-radius: 50%;
+    margin-left: 6px;
+    vertical-align: middle;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
 }
 
 #accueil-page #searchInput {
@@ -844,6 +866,12 @@ body:has(#discussion-page) main {
         height: 40px;
     }
 
+    #accueil-page .notification-dot {
+        width: 7px;
+        height: 7px;
+        margin-left: 5px;
+    }
+
     #accueil-page .user-item {
         padding: 8px 10px;
         font-size: 12px;
@@ -1018,6 +1046,12 @@ body:has(#discussion-page) main {
 
     #accueil-page .discussion-name {
         font-size: 13px;
+    }
+
+    #accueil-page .notification-dot {
+        width: 6px;
+        height: 6px;
+        margin-left: 4px;
     }
 
     #accueil-page .user-item {
