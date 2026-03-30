@@ -5,6 +5,8 @@ import os
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev")
+UPLOAD_FOLDER = 'static/avatars'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 db = DatabaseManager()
 
 @app.route('/', methods=['GET', 'POST'])
@@ -74,6 +76,17 @@ def supprimer_message(id_message):
         db.supprimer_message(id_message, session['user_id'])
         return redirect(f'/discussion/{id_user}')
     return redirect('/accueil')
+
+@app.route('/upload_avatar', methods=['POST'])
+def upload_avatar():
+    if 'user_id' not in session:
+        return redirect('/')
+    file = request.files.get('avatar')
+    if file and file.filename != '':
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(filepath)
+        db.update_avatar(session['user_id'], file.filename)
+    return redirect('/mon_compte')
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
