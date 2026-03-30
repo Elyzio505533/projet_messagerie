@@ -1,23 +1,34 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div id="discussion-page">
+    <div class="discussion-header">
+        <h1>{{ user.pseudo }}</h1>
+    </div>
 
-{% for m in messages %}
-    <small>{{ m.datetime }}</small>
-    <p>{{ m.content }}</p>
-    {% if m.id_sender == session['user_id'] %}
-    <form method="POST" action="/supprimer_message/{{ m.id }}">
-        <input type="hidden" name="id_user" value="{{ id_user }}">
-        <button type="submit">Supprimer</button>
+    <div class="messages-container">
+        {% for m in messages %}
+            <div class="message-item {% if m.id_sender == session['user_id'] %}message-sent{% else %}message-received{% endif %}">
+                <div class="message-content">
+                    <p>{{ m.content }}</p>
+                </div>
+                <div class="message-footer">
+                    <small class="message-time">{{ m.datetime }}</small>
+                    {% if m.id_sender == session['user_id'] %}
+                    <form method="POST" action="/supprimer_message/{{ m.id }}" class="delete-form">
+                        <input type="hidden" name="id_user" value="{{ id_user }}">
+                        <button type="submit" class="delete-btn">Supprimer</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <form class="message-form" method="POST">
+        <input type="text" name="content" placeholder="Votre message" required>
+        <button type="submit">Envoyer</button>
     </form>
-    {% endif %}
-{% endfor %}
-
-<form method="POST">
-    <input type="text" name="content" placeholder="Votre message">
-    <button type="submit">Envoyer</button>
-</form>
-
-{{ user.pseudo }}
+</div>
 
 {% endblock %}

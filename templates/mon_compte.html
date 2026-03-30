@@ -1,8 +1,62 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<form method="POST" action="/upload_avatar" enctype="multipart/form-data">
-    <input type="file" name="avatar" accept="image/*">
-    <button type="submit">Changer d'avatar</button>
-</form>
+<div id="mon-compte-page">
+    <h1>Mon Compte</h1>
+    
+    <div class="account-container">
+        <!-- Section Avatar -->
+        <div class="account-section avatar-section">
+            <h2>Avatar</h2>
+            <div class="avatar-display">
+                <img src="{{ url_for('static', filename='avatars/' + (user.avatar if user.avatar else 'default.png')) }}" alt="Mon avatar" class="current-avatar">
+            </div>
+            <form method="POST" action="/upload_avatar" enctype="multipart/form-data" class="avatar-form">
+                <input type="file" name="avatar" accept="image/*" required>
+                <button type="submit">Changer d'avatar</button>
+            </form>
+        </div>
+
+        <!-- Section Pseudo -->
+        <div class="account-section pseudo-section">
+            <h2>Pseudo</h2>
+            <p class="current-info">Pseudo actuel: <strong>{{ user.pseudo }}</strong></p>
+            <form method="POST" action="/update_pseudo" class="pseudo-form">
+                <input type="text" name="pseudo" placeholder="Nouveau pseudo" required>
+                <button type="submit">Changer le pseudo</button>
+            </form>
+            {% if erreur_pseudo %}
+            <p class="error-message">{{ erreur_pseudo }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Section Mot de Passe -->
+        <div class="account-section password-section">
+            <h2>Mot de passe</h2>
+            <form method="POST" action="/update_password" class="password-form">
+                <input type="password" name="old_password" placeholder="Ancien mot de passe" required>
+                <input type="password" name="new_password" placeholder="Nouveau mot de passe" required>
+                <input type="password" name="confirm_password" placeholder="Confirmer le mot de passe" required>
+                <button type="submit">Changer le mot de passe</button>
+            </form>
+            {% if erreur_password %}
+            <p class="error-message">{{ erreur_password }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Section Supprimer le Compte -->
+        <div class="account-section delete-section">
+            <h2>Supprimer le compte</h2>
+            <p class="warning-text">⚠️ Cette action est irréversible. Tous vos messages seront supprimés.</p>
+            <form method="POST" action="/delete_account" class="delete-form" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.');">
+                <input type="password" name="password" placeholder="Confirmer avec votre mot de passe" required>
+                <button type="submit" class="delete-button">Supprimer le compte</button>
+            </form>
+            {% if erreur_delete %}
+            <p class="error-message">{{ erreur_delete }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
 {% endblock %}

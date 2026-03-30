@@ -180,3 +180,144 @@ class DatabaseManager:
             conn.commit()
         finally:
             conn.close()
+    
+    def get_user_profile(self, user_id):
+        conn = self.get_connexion()
+        try:
+            user = conn.execute(
+                'SELECT id_user, email, pseudo, avatar FROM users WHERE id_user=?',
+                (user_id,)
+            ).fetchone()
+            return user
+        finally:
+            conn.close()
+    
+    def update_pseudo(self, user_id, new_pseudo):
+        conn = self.get_connexion()
+        try:
+            # Vérifier que le pseudo n'existe pas déjà
+            existing = conn.execute(
+                'SELECT id_user FROM users WHERE pseudo=? AND id_user!=?',
+                (new_pseudo, user_id)
+            ).fetchone()
+            
+            if existing:
+                return False
+            
+            conn.execute(
+                'UPDATE users SET pseudo=? WHERE id_user=?',
+                (new_pseudo, user_id)
+            )
+            conn.commit()
+            return True
+        finally:
+            conn.close()
+    
+    def update_password(self, user_id, new_password):
+        import hashlib
+        mdp_hash = hashlib.sha256(new_password.encode('utf-8')).hexdigest()
+        conn = self.get_connexion()
+        try:
+            conn.execute(
+                'UPDATE users SET password=? WHERE id_user=?',
+                (mdp_hash, user_id)
+            )
+            conn.commit()
+            return True
+        finally:
+            conn.close()
+    
+    def delete_account(self, user_id):
+        conn = self.get_connexion()
+        try:
+            # Supprimer tous les messages de l'utilisateur
+            conn.execute('DELETE FROM messages WHERE id_sender=? OR id_receiver=?', (user_id, user_id))
+            # Supprimer l'utilisateur
+            conn.execute('DELETE FROM users WHERE id_user=?', (user_id,))
+            conn.commit()
+            return True
+        finally:
+            conn.close()
+    
+    # ────────────────────────────────────────────────────────────────────────── 
+    # FONCTIONS ADMIN
+    # ──────────────────────────────────────────────────────────────────────────
+    
+    def get_all_users_admin(self):
+        conn = self.get_connexion()
+        try:
+            users = conn.execute(
+                'SELECT id_user, email, pseudo, is_admin FROM users ORDER BY id_user DESC'
+            ).fetchall()
+            return users
+        finally:
+            conn.close()
+    
+    def get_all_messages_admin(self):
+        conn = self.get_connexion()
+        try:
+            messages = conn.execute('''
+                SELECT m.id, m.content, m.datetime, m.id_sender, m.id_receiver,
+                       u1.pseudo as sender_pseudo, u2.pseudo as receiver_pseudo
+                FROM messages m
+                LEFT JOIN users u1 ON m.id_sender = u1.id_user
+                LEFT JOIN users u2 ON m.id_receiver = u2.id_user
+                ORDER BY m.datetime DESC
+            ''').fetchall()
+            return messages
+        finally:
+            conn.close()
+    
+    def create_user_admin(self, email, password, pseudo, is_admin=0):
+        return self.inscrire(email, password, pseudo, is_admin)
+    
+    def update_user_admin(self, user_id, email, pseudo, is_admin):
+        conn = self.get_connexion()
+        try:
+            # Vérifier que l'email/pseudo n'existent pas déjà
+            existing_email = conn.execute(
+                'SELECT id_user FROM users WHERE email=? AND id_user!=?',
+                (email, user_id)
+            ).fetchone()
+            
+            existing_pseudo = conn.execute(
+                'SELECT id_user FROM users WHERE pseudo=? AND id_user!=?',
+                (pseudo, user_id)
+            ).fetchone()
+            
+            if existing_email or existing_pseudo:
+                return False
+            
+            conn.execute(
+                'UPDATE users SET email=?, pseudo=?, is_admin=? WHERE id_user=?',
+                (email, pseudo, is_admin, user_id)
+            )
+            conn.commit()
+            return True
+        finally:
+            conn.close()
+    
+    def delete_user_admin(self, user_id):
+        # Ne pas supprimer l'admin par défaut
+        if user_id == 1:
+            return False
+        
+        conn = self.get_connexion()
+        try:
+            # Supprimer tous les messages de l'utilisateur
+            conn.execute('DELETE FROM messages WHERE id_sender=? OR id_receiver=?', (user_id, user_id))
+            # Supprimer l'utilisateur
+            conn.execute('DELETE FROM users WHERE id_user=?', (user_id,))
+            conn.commit()
+            return True
+        finally:
+            conn.close()
+    
+    def delete_message_admin(self, message_id):
+        conn = self.get_connexion()
+        try:
+            conn.execute('DELETE FROM messages WHERE id=?', (message_id,))
+            conn.commit()
+            return True
+        finally:
+            conn.close()

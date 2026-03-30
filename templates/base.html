@@ -8,12 +8,16 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon_io/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon_io/favicon-16x16.png">
     <link rel="manifest" href="/static/favicon_io/site.webmanifest">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <nav>
-        <a href="/accueil">Accueil</a>
-        <a href="/mon_compte">Mon Compte</a>
-        <a href="/deconnexion">Déconnexion</a>
+    <nav class="app-nav">
+        <a href="/accueil" class="nav-link">Accueil</a>
+        <a href="/mon_compte" class="nav-link">Mon Compte</a>
+        {% if session.get('user_is_admin') %}
+        <a href="/admin" class="nav-link admin-link">Admin</a>
+        {% endif %}
+        <a href="/deconnexion" class="nav-link">Déconnexion</a>
     </nav>
 
     <main>
