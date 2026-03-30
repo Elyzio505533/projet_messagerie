@@ -140,6 +140,13 @@ class DatabaseManager:
         finally:
             conn.close()
     
+    def recuperer_utilisateur(self, user_id):
+        conn = self.get_connexion()
+        try:
+            user = conn.execute('SELECT id_user, pseudo, is_admin FROM users WHERE id_user=?', (user_id,)).fetchone()
+            return user
+        finally: conn.close()
+
     def recuperer_utilisateurs(self):
         conn = self.get_connexion()
         try:
