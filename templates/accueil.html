@@ -2,17 +2,37 @@
 
 {% block content %}
 
+<input type="text" id="searchInput" placeholder="Rechercher un utilisateur..." onkeyup="filtrerUsers()">
+<br><br>
+
 {% set displayed_users = [] %}
 
 {% for d in discussions %}
-    <a href="/discussion/{{ d.id_user }}">{{ d.pseudo }}</a><br>
+    <a href="/discussion/{{ d.id_user }}" class="user-item">{{ d.pseudo }}</a><br>
     {% set _ = displayed_users.append(d.id_user) %}
 {% endfor %}
 
 {% for u in users %}
     {% if u.id_user not in displayed_users and session['user_id'] != u.id_user and not u.is_admin %}
-        <a href="/discussion/{{ u.id_user }}">{{ u.pseudo }}</a><br>
+        <a href="/discussion/{{ u.id_user }}" class="user-item">{{ u.pseudo }}</a><br>
     {% endif %}
 {% endfor %}
+
+<script>
+function filtrerUsers() {
+    let input = document.getElementById("searchInput").value.toLowerCase();
+    let users = document.getElementsByClassName("user-item");
+
+    for (let i = 0; i < users.length; i++) {
+        let pseudo = users[i].textContent.toLowerCase();
+
+        if (pseudo.includes(input)) {
+            users[i].style.display = "";
+        } else {
+            users[i].style.display = "none";
+        }
+    }
+}
+</script>
 
 {% endblock %}
