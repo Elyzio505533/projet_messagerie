@@ -8,13 +8,21 @@
 {% set displayed_users = [] %}
 
 {% for d in discussions %}
-    <a href="/discussion/{{ d.id_user }}" class="user-item">{{ d.pseudo }}</a><br>
-    {% set _ = displayed_users.append(d.id_user) %}
+    {% if session['user_id'] != d.id_user %}
+        <a href="/discussion/{{ d.id_user }}" class="user-item">
+            <img src="{{ url_for('static', filename='avatars/' + (d.avatar if d.avatar else 'default.png')) }}" width="30" height="30">
+            {{ d.pseudo }}
+        </a><br>
+        {% set _ = displayed_users.append(d.id_user) %}
+    {% endif %}
 {% endfor %}
 
 {% for u in users %}
     {% if u.id_user not in displayed_users and session['user_id'] != u.id_user and not u.is_admin %}
-        <a href="/discussion/{{ u.id_user }}" class="user-item">{{ u.pseudo }}</a><br>
+        <a href="/discussion/{{ u.id_user }}" class="user-item">
+            <img src="{{ url_for('static', filename='avatars/' + (u.avatar if u.avatar else 'default.png')) }}" width="50" height="50">
+            {{ u.pseudo }}
+        </a><br>
     {% endif %}
 {% endfor %}
 
@@ -22,10 +30,8 @@
 function filtrerUsers() {
     let input = document.getElementById("searchInput").value.toLowerCase();
     let users = document.getElementsByClassName("user-item");
-
     for (let i = 0; i < users.length; i++) {
         let pseudo = users[i].textContent.toLowerCase();
-
         if (pseudo.includes(input)) {
             users[i].style.display = "";
         } else {

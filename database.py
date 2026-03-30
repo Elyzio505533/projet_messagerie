@@ -24,7 +24,8 @@ class DatabaseManager:
                     email TEXT UNIQUE NOT NULL,
                     password TEXT NOT NULL,
                     pseudo TEXT UNIQUE NOT NULL,
-                    is_admin BOOLEAN NOT NULL
+                    is_admin BOOLEAN NOT NULL,
+                    avatar TEXT DEFAULT 'default.png'
                 )
             ''')
 
@@ -127,7 +128,7 @@ class DatabaseManager:
         conn = self.get_connexion()
         try:
             discussions = conn.execute('''
-                SELECT DISTINCT pseudo, id_user FROM USERS
+                SELECT DISTINCT id_user, pseudo, is_admin, avatar FROM USERS
                 WHERE id_user IN (
                     SELECT id_sender FROM MESSAGES WHERE id_receiver = ?
                     UNION
@@ -138,15 +139,12 @@ class DatabaseManager:
             return discussions
         finally:
             conn.close()
-
-    def recuperer_utilisateur(self, id_user):
+    
+    def recuperer_utilisateurs(self):
         conn = self.get_connexion()
         try:
-            user = conn.execute(
-                'SELECT pseudo FROM users WHERE id_user=?',
-                (id_user,)
-                ).fetchone()
-            return user
+            users = conn.execute('SELECT id_user, pseudo, is_admin, avatar FROM users').fetchall()
+            return users
         finally:
             conn.close()
     
@@ -162,5 +160,16 @@ class DatabaseManager:
                 conn.commit()
                 return True
             return False
+        finally:
+            conn.close()
+
+    def update_avatar(self, user_id, filename):
+        conn = self.get_connexion()
+        try:
+            conn.execute(
+                'UPDATE users SET avatar=? WHERE id_user=?',
+                (filename, user_id)
+            )
+            conn.commit()
         finally:
             conn.close()

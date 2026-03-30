@@ -1,5 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-page du compte
+<form method="POST" action="/upload_avatar" enctype="multipart/form-data">
+    <input type="file" name="avatar" accept="image/*">
+    <button type="submit">Changer d'avatar</button>
+</form>
 {% endblock %}
