@@ -3,8 +3,14 @@
 {% block content %}
 
 {% for m in messages %}
-    {{ m.datetime }}
-    {{ m.content }}
+    <small>{{ m.datetime }}</small>
+    <p>{{ m.content }}</p>
+    {% if m.id_sender == session['user_id'] %}
+    <form method="POST" action="/supprimer_message/{{ m.id }}"">
+        <input type="hidden" name="id_user" value="{{ id_user }}">
+        <button type="submit">Supprimer</button>
+    </form>
+    {% endif %}
 {% endfor %}
 
 <form method="POST">

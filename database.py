@@ -112,7 +112,7 @@ class DatabaseManager:
         try:
             messages = conn.execute(
                 '''
-                SELECT content, datetime, id_sender, id_receiver
+                SELECT id, content, datetime, id_sender, id_receiver
                 FROM messages
                 WHERE (id_sender=? AND id_receiver=?) OR (id_sender=? AND id_receiver=?)
                 ORDER BY datetime ASC
@@ -147,5 +147,20 @@ class DatabaseManager:
                 (id_user,)
                 ).fetchone()
             return user
+        finally:
+            conn.close()
+    
+    def supprimer_message(self, id_message, id_user):
+        conn = self.get_connexion()
+        try:
+            message = conn.execute(
+                'SELECT id_sender FROM messages WHERE id=?',
+                (id_message,)
+            ).fetchone()
+            if message and message['id_sender'] == id_user:
+                conn.execute('DELETE FROM messages WHERE id=?', (id_message,))
+                conn.commit()
+                return True
+            return False
         finally:
             conn.close()

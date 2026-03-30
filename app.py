@@ -59,11 +59,21 @@ def discussion(id_user):
         db.creer_message(content, session['user_id'], id_user)
     messages = db.recuperer_messages(session['user_id'], id_user)
     user = db.recuperer_utilisateur(id_user)
-    return render_template('discussion.html', messages=messages, user=user)
+    return render_template('discussion.html', messages=messages, user=user, id_user=id_user, session=session)
 
 @app.route('/mon_compte')
 def mon_compte():
     return render_template('mon_compte.html')
+
+@app.route('/supprimer_message/<int:id_message>', methods=['POST'])
+def supprimer_message(id_message):
+    if 'user_id' not in session:
+        return redirect('/')
+    id_user = request.form.get('id_user')
+    if id_user:
+        db.supprimer_message(id_message, session['user_id'])
+        return redirect(f'/discussion/{id_user}')
+    return redirect('/accueil')
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
