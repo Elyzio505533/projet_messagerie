@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="admin-page">
+    <h1>Admin Dashboard</h1>
+    
+    <div class="admin-container">
+        <!-- Section Utilisateurs -->
+        <div class="admin-section users-section">
+            <h2>Gestion des Utilisateurs</h2>
+            
+            <!-- Créer un utilisateur -->
+            <div class="create-form-section">
+                <h3>Créer un nouvel utilisateur</h3>
+                <form method="POST" action="/admin/user/create" class="admin-form">
+                    <input type="email" name="email" placeholder="Email" required>
+                    <input type="password" name="password" placeholder="Mot de passe" required>
+                    <input type="text" name="pseudo" placeholder="Pseudo" required>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="is_admin" value="1">
+                        Admin
+                    </label>
+                    <button type="submit" class="btn-primary">Ajouter un utilisateur</button>
+                </form>
+            </div>
+            
+            <!-- Liste des utilisateurs -->
+            <div class="users-table-section">
+                <h3>Liste des utilisateurs</h3>
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Email</th>
+                                <th>Pseudo</th>
+                                <th>Admin</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr class="user-row" data-user-id="{{ user.id_user }}">
+                                <td>{{ user.id_user }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.pseudo }}</td>
+                                <td>
+                                    {% if user.is_admin %}
+                                    <span class="badge admin-badge">Admin</span>
+                                    {% else %}
+                                    <span class="badge user-badge">Utilisateur</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn-edit" onclick="editUser({{ user.id_user }}, '{{ user.email }}', '{{ user.pseudo }}', {{ user.is_admin }})">Modifier</button>
+                                    {% if session['user_id'] != user.id_user and user.id_user != 1 %}
+                                    <form method="POST" action="/admin/user/{{ user.id_user }}/delete" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr ?');">
+                                        <button type="submit" class="btn-delete">Supprimer</button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            
+                            <!-- Ligne d'édition (masquée par défaut) -->
+                            <tr class="edit-user-row" id="edit-row-{{ user.id_user }}" style="display:none;">
+                                <td colspan="5">
+                                    <form method="POST" action="/admin/user/{{ user.id_user }}/update" class="admin-form inline-form">
+                                        <input type="email" name="email" value="{{ user.email }}" required>
+                                        <input type="text" name="pseudo" value="{{ user.pseudo }}" required>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="is_admin" value="1" {% if user.is_admin %}checked{% endif %}>
+                                            Admin
+                                        </label>
+                                        <button type="submit" class="btn-primary">Valider</button>
+                                        <button type="button" class="btn-secondary" onclick="cancelEdit({{ user.id_user }})">Annuler</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section Messages -->
+        <div class="admin-section messages-section">
+            <h2>Gestion des Messages</h2>
+            
+            <div class="messages-table-section">
+                <h3>Tous les messages</h3>
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Expéditeur</th>
+                                <th>Destinataire</th>
+                                <th>Contenu</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for msg in messages %}
+                            <tr class="message-row">
+                                <td>{{ msg.id }}</td>
+                                <td>{{ msg.sender_pseudo or 'Supprimé' }}</td>
+                                <td>{{ msg.receiver_pseudo or 'Supprimé' }}</td>
+                                <td class="message-content-cell">
+                                    <div class="message-content-preview">{{ msg.content[:50] }}{% if msg.content|length > 50 %}...{% endif %}</div>
+                                </td>
+                                <td>{{ msg.datetime }}</td>
+                                <td>
+                                    <form method="POST" action="/admin/message/{{ msg.id }}/delete" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de supprimer ce message ?');">
+                                        <button type="submit" class="btn-delete">Supprimer</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function editUser(userId, email, pseudo, isAdmin) {
+    const row = document.querySelector(`#edit-row-${userId}`);
+    const userRow = document.querySelector(`tr.user-row[data-user-id="${userId}"]`);
+    if (row) {
+        row.style.display = 'table-row';
+        userRow.style.display = 'none';
+    }
+}
+
+function cancelEdit(userId) {
+    const row = document.querySelector(`#edit-row-${userId}`);
+    const userRow = document.querySelector(`tr.user-row[data-user-id="${userId}"]`);
+    if (row) {
+        row.style.display = 'none';
+        userRow.style.display = 'table-row';
+    }
+}
+</script>
+
+{% endblock %}

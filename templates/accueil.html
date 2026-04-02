@@ -1,30 +1,61 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div id="accueil-page">
+    <div class="accueil-container">
+        <!-- Colonne gauche: Discussions -->
+        <div class="discussions-column">
+            <h2>Discussions</h2>
+            
+            <div class="discussions-list">
+                {% set displayed_users = [] %}
 
-<input type="text" id="searchInput" placeholder="Rechercher un utilisateur..." onkeyup="filtrerUsers()">
-<br><br>
+                {% for d in discussions %}
+                    {% if session['user_id'] != d.id_user %}
+                        <a href="/discussion/{{ d.id_user }}" class="discussion-item">
+                            <img src="{{ url_for('static', filename='avatars/' + (d.avatar if d.avatar else 'default.png')) }}" alt="avatar">
+                            <div class="discussion-info">
+                                <span class="discussion-name">
+                                    {{ d.pseudo }}
+                                    {% if d.unread_count and d.unread_count > 0 %}
+                                        <span class="notification-dot"></span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </a>
+                        {% set _ = displayed_users.append(d.id_user) %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
 
-{% set displayed_users = [] %}
+        <!-- Colonne droite: Utilisateurs et recherche -->
+        <div class="users-column">
+            <h2>Utilisateurs</h2>
+            
+            <input type="text" id="searchInput" placeholder="Rechercher..." onkeyup="filtrerUsers()">
 
-{% for d in discussions %}
-    {% if session['user_id'] != d.id_user %}
-        <a href="/discussion/{{ d.id_user }}" class="user-item">
-            <img src="{{ url_for('static', filename='avatars/' + (d.avatar if d.avatar else 'default.png')) }}" width="30" height="30">
-            {{ d.pseudo }}
-        </a><br>
-        {% set _ = displayed_users.append(d.id_user) %}
-    {% endif %}
-{% endfor %}
+            <div class="available-users-list">
+                {% set displayed_users = [] %}
 
-{% for u in users %}
-    {% if u.id_user not in displayed_users and session['user_id'] != u.id_user and not u.is_admin %}
-        <a href="/discussion/{{ u.id_user }}" class="user-item">
-            <img src="{{ url_for('static', filename='avatars/' + (u.avatar if u.avatar else 'default.png')) }}" width="50" height="50">
-            {{ u.pseudo }}
-        </a><br>
-    {% endif %}
-{% endfor %}
+                {% for d in discussions %}
+                    {% if session['user_id'] != d.id_user %}
+                        {% set _ = displayed_users.append(d.id_user) %}
+                    {% endif %}
+                {% endfor %}
+
+                {% for u in users %}
+                    {% if u.id_user not in displayed_users and session['user_id'] != u.id_user and not u.is_admin %}
+                        <a href="/discussion/{{ u.id_user }}" class="user-item">
+                            <img src="{{ url_for('static', filename='avatars/' + (u.avatar if u.avatar else 'default.png')) }}" width="40" height="40" alt="avatar">
+                            <span class="user-name">{{ u.pseudo }}</span>
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 function filtrerUsers() {
