@@ -2,14 +2,12 @@ from flask import Flask, render_template, request, redirect, session
 from database import DatabaseManager
 import os
 
-
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev")
 UPLOAD_FOLDER = 'static/avatars'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 db = DatabaseManager()
 
-# Rendre session disponible dans tous les templates
 @app.context_processor
 def inject_session():
     return {'session': session}
@@ -57,15 +55,12 @@ def deconnexion():
 def accueil():
     discussions = db.recuperer_discussions(id_user=session['user_id'])
     users = db.recuperer_utilisateurs()
-    
-    # Convertir les Row en dictionnaires mutables et ajouter le nombre de messages non lus
     discussions_with_unread = []
     for discussion in discussions:
         discussion_dict = dict(discussion)
         unread_count = db.count_unread_messages(session['user_id'], discussion['id_user'])
         discussion_dict['unread_count'] = unread_count
         discussions_with_unread.append(discussion_dict)
-    
     return render_template('accueil.html', discussions=discussions_with_unread, users=users)
 
 @app.route('/discussion/<int:id_user>', methods=['GET', 'POST'])
@@ -73,13 +68,9 @@ def discussion(id_user):
     if request.method == 'POST':
         content = request.form['content']
         db.creer_message(content, session['user_id'], id_user)
-    
     messages = db.recuperer_messages(session['user_id'], id_user)
     user = db.recuperer_utilisateur(id_user)
-    
-    # Enregistrer la visite pour marquer les messages comme lus
     db.update_last_visit(session['user_id'], id_user)
-    
     return render_template('discussion.html', messages=messages, user=user, id_user=id_user, session=session)
 
 @app.route('/mon_compte')
@@ -91,7 +82,6 @@ def mon_compte():
 def update_pseudo():
     if 'user_id' not in session:
         return redirect('/')
-    
     new_pseudo = request.form.get('pseudo')
     if new_pseudo and new_pseudo.strip():
         if db.update_pseudo(session['user_id'], new_pseudo):
@@ -106,27 +96,20 @@ def update_pseudo():
 def update_password():
     if 'user_id' not in session:
         return redirect('/')
-    
     old_password = request.form.get('old_password')
     new_password = request.form.get('new_password')
     confirm_password = request.form.get('confirm_password')
-    
     if not all([old_password, new_password, confirm_password]):
         user = db.get_user_profile(session['user_id'])
         return render_template('mon_compte.html', user=user, erreur_password='Tous les champs sont requis')
-    
     if new_password != confirm_password:
         user = db.get_user_profile(session['user_id'])
         return render_template('mon_compte.html', user=user, erreur_password='Les mots de passe ne correspondent pas')
-    
-    # Vérifier que l'ancien mot de passe est correct
     email = db.get_user_profile(session['user_id'])['email']
     current_user = db.connecter(email, old_password)
-    
     if not current_user:
         user = db.get_user_profile(session['user_id'])
         return render_template('mon_compte.html', user=user, erreur_password='Ancien mot de passe incorrect')
-    
     db.update_password(session['user_id'], new_password)
     return redirect('/mon_compte')
 
@@ -134,17 +117,12 @@ def update_password():
 def delete_account():
     if 'user_id' not in session:
         return redirect('/')
-    
     password = request.form.get('password')
     email = db.get_user_profile(session['user_id'])['email']
-    
-    # Vérifier le mot de passe
     current_user = db.connecter(email, password)
     if not current_user:
         user = db.get_user_profile(session['user_id'])
         return render_template('mon_compte.html', user=user, erreur_delete='Mot de passe incorrect')
-    
-    # Supprimer le compte
     db.delete_account(session['user_id'])
     session.clear()
     return redirect('/')
@@ -170,12 +148,7 @@ def upload_avatar():
         db.update_avatar(session['user_id'], file.filename)
     return redirect('/mon_compte')
 
-# ────────────────────────────────────────────────────────────────────────── 
-# ROUTES ADMIN
-# ──────────────────────────────────────────────────────────────────────────
-
 def check_admin():
-    """Vérifier que l'utilisateur est admin"""
     if 'user_id' not in session or not session.get('user_is_admin'):
         return False
     return True
@@ -184,7 +157,6 @@ def check_admin():
 def admin_dashboard():
     if not check_admin():
         return redirect('/accueil')
-    
     users = db.get_all_users_admin()
     messages = db.get_all_messages_admin()
     return render_template('admin.html', users=users, messages=messages)
@@ -193,40 +165,31 @@ def admin_dashboard():
 def admin_create_user():
     if not check_admin():
         return redirect('/accueil')
-    
     email = request.form.get('email')
     password = request.form.get('password')
     pseudo = request.form.get('pseudo')
     is_admin = int(request.form.get('is_admin', 0))
-    
     if email and password and pseudo:
         db.create_user_admin(email, password, pseudo, is_admin)
-    
     return redirect('/admin')
 
 @app.route('/admin/user/<int:user_id>/update', methods=['POST'])
 def admin_update_user(user_id):
     if not check_admin():
         return redirect('/accueil')
-    
     email = request.form.get('email')
     pseudo = request.form.get('pseudo')
     is_admin = int(request.form.get('is_admin', 0))
-    
     if email and pseudo:
         db.update_user_admin(user_id, email, pseudo, is_admin)
-    
     return redirect('/admin')
 
 @app.route('/admin/user/<int:user_id>/delete', methods=['POST'])
 def admin_delete_user(user_id):
     if not check_admin():
         return redirect('/accueil')
-    
-    # Empêcher la suppression de son propre compte
     if user_id == session['user_id']:
         return redirect('/admin')
-    
     db.delete_user_admin(user_id)
     return redirect('/admin')
 
@@ -234,7 +197,6 @@ def admin_delete_user(user_id):
 def admin_delete_message(message_id):
     if not check_admin():
         return redirect('/accueil')
-    
     db.delete_message_admin(message_id)
     return redirect('/admin')
 

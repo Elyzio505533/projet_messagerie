@@ -182,7 +182,8 @@ button[type="submit"]:active { transform:scale(.98); }
     justify-content: center;
     gap: 24px;
     padding: 16px 24px;
-    background: #ffffff;
+    background: #78D256;
+    background: linear-gradient(125deg, rgba(120, 210, 86, 1) 0%, rgb(40, 168, 82) 100%);
     border-bottom: 1px solid #e5e5e5;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
@@ -190,7 +191,7 @@ button[type="submit"]:active { transform:scale(.98); }
 .nav-link {
     font-size: 14px;
     font-weight: 600;
-    color: #111;
+    color: white;
     text-decoration: none;
     padding: 8px 12px;
     border-radius: 6px;
@@ -255,7 +256,7 @@ body:has(#accueil-page) main {
 }
 
 #accueil-page .discussions-column {
-    width: 75%;
+    width: 70%;
     display: flex;
     flex-direction: column;
     border-right: 1px solid #e5e5e5;
@@ -263,7 +264,7 @@ body:has(#accueil-page) main {
 }
 
 #accueil-page .users-column {
-    width: 25%;
+    width: 30%;
     display: flex;
     flex-direction: column;
     background: #fafafa;
@@ -278,12 +279,17 @@ body:has(#accueil-page) main {
     border-bottom: 1px solid #e5e5e5;
 }
 
+#accueil-page .discussions-column h2 {
+    background: rgba(120, 210, 86, 0.05);
+}
+
 #accueil-page .discussions-list {
     flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     padding: 0;
+    background: rgba(120, 210, 86, 0.05);
 }
 
 #accueil-page .discussion-item {
@@ -298,7 +304,7 @@ body:has(#accueil-page) main {
 }
 
 #accueil-page .discussion-item:hover {
-    background-color: #f9faf9;
+    background-color: rgb(138, 222, 145);
     transform: translateX(4px);
 }
 

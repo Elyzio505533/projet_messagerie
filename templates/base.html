@@ -14,10 +14,10 @@
     <nav class="app-nav">
         <a href="/accueil" class="nav-link">Accueil</a>
         <a href="/mon_compte" class="nav-link">Mon Compte</a>
+        <a href="/deconnexion" class="nav-link">Déconnexion</a>
         {% if session.get('user_is_admin') %}
         <a href="/admin" class="nav-link admin-link">Admin</a>
         {% endif %}
-        <a href="/deconnexion" class="nav-link">Déconnexion</a>
     </nav>
 
     <main>
